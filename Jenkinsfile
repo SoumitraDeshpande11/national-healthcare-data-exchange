@@ -3,6 +3,7 @@ pipeline {
 
   parameters {
     booleanParam(name: 'BUILD_CONTAINER', defaultValue: true, description: 'Build the local exchange-api and portal container images.')
+    booleanParam(name: 'RUN_LIVE_SMOKE', defaultValue: false, description: 'Run Docker Compose smoke tests. Use only when host ports are free or the local stack may be restarted.')
     booleanParam(name: 'RUN_TRIVY', defaultValue: false, description: 'Run Trivy image scan when Docker is available.')
     booleanParam(name: 'DEPLOY_LOCAL_K8S', defaultValue: false, description: 'Apply manifests to the currently configured local Kubernetes cluster.')
     booleanParam(name: 'RUN_TERRAFORM', defaultValue: false, description: 'Run Terraform init/validate/plan for terraform/local.')
@@ -94,6 +95,9 @@ pipeline {
     }
 
     stage('Live Integration Smoke') {
+      when {
+        expression { return params.RUN_LIVE_SMOKE }
+      }
       steps {
         sh '''
           set -eu
@@ -103,7 +107,7 @@ pipeline {
       }
       post {
         always {
-          sh 'docker compose down -v || true'
+          sh 'docker compose down || true'
         }
       }
     }

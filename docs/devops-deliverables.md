@@ -4,7 +4,15 @@ This repository keeps CI and infrastructure local-first so reviewers can run the
 
 ## Jenkins
 
-`Jenkinsfile` supports:
+Jenkins runs locally from Docker Compose:
+
+```bash
+docker compose up -d --build jenkins
+```
+
+Open `http://localhost:8081` and sign in with `soumitra` / `deshpande`. The image creates a pipeline job named `national-healthcare-data-exchange`, clones the GitHub `main` branch into Jenkins' own workspace, and runs with Node 20, Docker CLI, Docker Compose, `kubectl`, and Terraform available inside the Jenkins container.
+
+The local Jenkins job and repo `Jenkinsfile` support:
 
 ```bash
 npm ci
@@ -19,6 +27,7 @@ docker build -t healthcare/exchange-api:ci-<build> -t healthcare/exchange-api:lo
 Optional Jenkins parameters:
 
 - `BUILD_CONTAINER`: builds the local API image.
+- `RUN_LIVE_SMOKE`: starts the Compose application stack and runs smoke tests. It is disabled by default because it uses the same host ports as the regular local stack.
 - `RUN_TRIVY`: runs `npm audit` and Trivy against the built image.
 - `DEPLOY_LOCAL_K8S`: applies `kubernetes/base` to the current kubeconfig context.
 - `RUN_TERRAFORM`: runs `terraform fmt -check`, `terraform init -backend=false`, `terraform validate`, and `terraform plan`.

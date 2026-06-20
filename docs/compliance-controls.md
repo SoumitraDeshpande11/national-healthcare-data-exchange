@@ -9,7 +9,7 @@ This project demonstrates engineering controls commonly expected in a regulated 
 | Repository ownership | `.github/CODEOWNERS` | `test -f .github/CODEOWNERS` |
 | Pull request governance | `.github/pull_request_template.md` | Review checklist file. |
 | CI validation | `.github/workflows/ci.yml` | Runs install, lint, tests, compliance check, and container build. |
-| Jenkins pipeline | `Jenkinsfile` | Runs install, app validation, manifest validation, build, and optional scan/deploy/Terraform stages. |
+| Jenkins pipeline | `docker-compose.yml`, `docker/jenkins`, `Jenkinsfile` | Open `http://localhost:8081` with `soumitra` / `deshpande` and run the `national-healthcare-data-exchange` job. |
 | Authentication | `/auth/token`, `services/exchange-api/src/services/auth.ts` | Exchange a demo API key for a JWT. |
 | Authorization | `requireAuth`, `requireOrgTypes`, patient access grants | Call `/compliance/summary` with a hospital token and expect `403`; run `npm run validate:api-authorization`. |
 | Patient consent and grants | `authorization.ts`, `records.ts`, `documents.ts`, `patients.ts` | Try to create or read data for a revoked or ungranted patient and expect `403`. |

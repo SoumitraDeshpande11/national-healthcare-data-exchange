@@ -16,6 +16,7 @@ The default runtime is Docker Compose:
 - `vault`: local dev Vault instance for secret-management policy examples.
 - `prometheus`: scrapes API metrics from `/metrics`.
 - `grafana`: local dashboard container with admin login.
+- `jenkins`: local CI server with a pre-created healthcare exchange pipeline job.
 - `elasticsearch`, `kibana`, and `filebeat`: local log/search stack for API and audit logs.
 
 The API starts by running database migrations from `services/exchange-api/src/db/migrate.ts`. Those migrations create five demo organizations and the core tables.
@@ -35,7 +36,7 @@ The API starts by running database migrations from `services/exchange-api/src/db
 | --- | --- |
 | `services/exchange-api` | Express API for auth, patient registry, record exchange, compliance summaries, audit-event lookup, health checks, and Prometheus metrics. |
 | `services/portal` | React portal with organization personas, login, patient registration, record publishing/search, compliance summary, and audit review. |
-| `docker-compose.yml` | Full local stack for API, portal, PostgreSQL, Redis, MinIO, Vault, Prometheus, Grafana, Elasticsearch, and Kibana. |
+| `docker-compose.yml` | Full local stack for API, portal, PostgreSQL, Redis, MinIO, Vault, Prometheus, Grafana, Jenkins, Elasticsearch, and Kibana. |
 | `scripts/smoke-test.sh` | Verifies `/health/live`, `/health/ready`, agency token issuance, and agency compliance access. |
 | `scripts/seed-demo.sh` | Logs in as the hospital, upserts one demo patient, and publishes one encounter record. |
 | `scripts/compliance-check.sh` | Checks required governance files, scans for obvious secret material, and confirms route handlers call `writeAudit`. |
@@ -93,6 +94,7 @@ API keys are stored as SHA-256 hashes in the seeded `organizations` table. `/aut
 | API | `http://localhost:8080` | Health, auth, patients, records, documents, compliance, metrics. |
 | Prometheus | `http://localhost:9090` | Scrapes `exchange-api:8080/metrics`. |
 | Grafana | `http://localhost:3000` | `soumitra` / `deshpande`. |
+| Jenkins | `http://localhost:8081` | `soumitra` / `deshpande`; job `national-healthcare-data-exchange`. |
 | MinIO Console | `http://localhost:9001` | `soumitra` / `deshpande`. |
 | Vault | `http://localhost:8200` | Root token `root` in dev mode. |
 | Kibana | `http://localhost:5601` | Connected to local Elasticsearch. |
@@ -131,6 +133,8 @@ API keys are stored as SHA-256 hashes in the seeded `organizations` table. `/aut
    curl -sS http://localhost:8080/health/ready | jq .
    curl -sS http://localhost:8080/metrics | head
    ```
+
+   Jenkins is available at `http://localhost:8081` with `soumitra` / `deshpande`. Open the `national-healthcare-data-exchange` job and run `Build with Parameters`. The default build installs dependencies, validates the app, builds it, renders Kubernetes manifests, and builds local Docker images. `RUN_LIVE_SMOKE` is off by default because it uses the same Compose ports as the running local stack.
 
 5. Seed demo data.
 

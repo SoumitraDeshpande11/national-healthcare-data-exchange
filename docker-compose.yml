@@ -143,6 +143,23 @@ services:
     depends_on:
       - prometheus
 
+  jenkins:
+    build:
+      context: .
+      dockerfile: docker/jenkins/Dockerfile
+    user: root
+    environment:
+      JENKINS_ADMIN_ID: soumitra
+      JENKINS_ADMIN_PASSWORD: deshpande
+      PIPELINE_JOB_NAME: national-healthcare-data-exchange
+      REPOSITORY_URL: https://github.com/SoumitraDeshpande11/national-healthcare-data-exchange.git
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.14.1
     environment:
@@ -182,6 +199,7 @@ volumes:
   postgres-data:
   minio-data:
   grafana-data:
+  jenkins-data:
   elastic-data:
   hde-api-logs:
   filebeat-data:
