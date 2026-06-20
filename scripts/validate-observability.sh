@@ -4,8 +4,8 @@ set -euo pipefail
 BASE_URL="${BASE_URL:-http://localhost:8080}"
 PROMETHEUS_URL="${PROMETHEUS_URL:-http://localhost:9090}"
 GRAFANA_URL="${GRAFANA_URL:-http://localhost:3000}"
-GRAFANA_USER="${GRAFANA_USER:-admin}"
-GRAFANA_PASSWORD="${GRAFANA_PASSWORD:-admin}"
+GRAFANA_USER="${GRAFANA_USER:-soumitra}"
+GRAFANA_PASSWORD="${GRAFANA_PASSWORD:-deshpande}"
 KIBANA_URL="${KIBANA_URL:-http://localhost:5601}"
 
 require_command() {

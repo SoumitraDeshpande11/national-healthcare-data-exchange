@@ -61,7 +61,7 @@ vault_curl -X PUT \
   "$VAULT_ADDR/v1/sys/policies/acl/healthcare-exchange" >/dev/null
 
 vault_curl -X POST \
-  -d '{"data":{"JWT_SECRET":"local-dev-change-me-with-32-characters","DATABASE_URL":"postgres://hde:hde_password@postgres:5432/hde","REDIS_URL":"redis://redis:6379","MINIO_ENDPOINT":"http://minio:9000","MINIO_ACCESS_KEY":"minioadmin","MINIO_SECRET_KEY":"minioadmin","MINIO_BUCKET":"healthcare-documents"}}' \
+  -d '{"data":{"JWT_SECRET":"local-dev-change-me-with-32-characters","DATABASE_URL":"postgres://hde:hde_password@postgres:5432/hde","REDIS_URL":"redis://redis:6379","MINIO_ENDPOINT":"http://minio:9000","MINIO_ACCESS_KEY":"soumitra","MINIO_SECRET_KEY":"deshpande","MINIO_BUCKET":"healthcare-documents"}}' \
   "$VAULT_ADDR/v1/secret/data/hde/exchange-api" >/dev/null
 
 secret="$(vault_curl "$VAULT_ADDR/v1/secret/data/hde/exchange-api")"

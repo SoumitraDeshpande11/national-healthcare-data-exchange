@@ -11,8 +11,8 @@ vault kv put secret/hde/exchange-api \
   REDIS_URL="redis://redis:6379" \
   JWT_SECRET="local-dev-change-me-with-32-characters" \
   MINIO_ENDPOINT="http://minio:9000" \
-  MINIO_ACCESS_KEY="minioadmin" \
-  MINIO_SECRET_KEY="minioadmin" \
+  MINIO_ACCESS_KEY="soumitra" \
+  MINIO_SECRET_KEY="deshpande" \
   MINIO_BUCKET="healthcare-documents" \
   ALLOWED_ORIGINS="http://localhost:5173,http://127.0.0.1:5173" \
   AUDIT_LOG_PATH="/var/log/hde/audit.log"

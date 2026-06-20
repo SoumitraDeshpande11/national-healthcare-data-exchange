@@ -61,7 +61,7 @@ The audit service also appends newline-delimited JSON to `AUDIT_LOG_PATH`, defau
 
 ## Observability
 
-The API installs request metrics middleware and exposes Prometheus text metrics at `/metrics`. Prometheus uses `docker/prometheus/prometheus.yml` to scrape the API. Grafana runs locally on port `3000` with `admin/admin`.
+The API installs request metrics middleware and exposes Prometheus text metrics at `/metrics`. Prometheus uses `docker/prometheus/prometheus.yml` to scrape the API. Grafana runs locally on port `3000` with `soumitra/deshpande`.
 
 Logs are emitted through Pino. Filebeat reads the API and audit log files from the shared log volume and ships them into Elasticsearch for Kibana exploration.
 

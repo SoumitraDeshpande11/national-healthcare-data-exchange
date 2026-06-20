@@ -9,8 +9,8 @@ import {
 } from "@aws-sdk/client-s3";
 
 const endpoint = process.env.MINIO_ENDPOINT ?? "http://localhost:9000";
-const accessKeyId = process.env.MINIO_ACCESS_KEY ?? "minioadmin";
-const secretAccessKey = process.env.MINIO_SECRET_KEY ?? "minioadmin";
+const accessKeyId = process.env.MINIO_ACCESS_KEY ?? "soumitra";
+const secretAccessKey = process.env.MINIO_SECRET_KEY ?? "deshpande";
 const bucket = process.env.MINIO_BUCKET ?? "healthcare-documents";
 const key = `integration-check/${Date.now()}-${process.pid}.json`;
 const payload = JSON.stringify({

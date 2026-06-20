@@ -92,8 +92,8 @@ API keys are stored as SHA-256 hashes in the seeded `organizations` table. `/aut
 | Portal | `http://localhost:5173` | Main demo UI. |
 | API | `http://localhost:8080` | Health, auth, patients, records, documents, compliance, metrics. |
 | Prometheus | `http://localhost:9090` | Scrapes `exchange-api:8080/metrics`. |
-| Grafana | `http://localhost:3000` | `admin` / `admin`. |
-| MinIO Console | `http://localhost:9001` | `minioadmin` / `minioadmin`. |
+| Grafana | `http://localhost:3000` | `soumitra` / `deshpande`. |
+| MinIO Console | `http://localhost:9001` | `soumitra` / `deshpande`. |
 | Vault | `http://localhost:8200` | Root token `root` in dev mode. |
 | Kibana | `http://localhost:5601` | Connected to local Elasticsearch. |
 
