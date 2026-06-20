@@ -10,7 +10,6 @@ import {
   ClipboardList,
   Database,
   Download,
-  ExternalLink,
   FilePlus2,
   FileText,
   Gauge,
@@ -26,7 +25,6 @@ import {
   Pill,
   RefreshCcw,
   Search,
-  Server,
   ShieldCheck,
   Stethoscope,
   TestTube2,
@@ -118,15 +116,6 @@ const architectureCards = [
     title: "Disaster Recovery",
     text: "Local backup and failover scripts demonstrate recovery procedures for the platform."
   }
-];
-
-const serviceLinks = [
-  { label: "API", url: "http://localhost:8080/health/live", value: "8080", access: "Live health probe" },
-  { label: "Grafana", url: "http://localhost:3000", value: "3000", access: "Metrics dashboard" },
-  { label: "Prometheus", url: "http://localhost:9090", value: "9090", access: "Scrape targets" },
-  { label: "MinIO", url: "http://localhost:9001", value: "9001", access: "Object storage console" },
-  { label: "Vault", url: "http://localhost:8200", value: "8200", access: "Secrets console" },
-  { label: "Kibana", url: "http://localhost:5601", value: "5601", access: "Log explorer" }
 ];
 
 const pipelineSteps = ["Commit", "Lint", "Compliance", "Tests", "Build", "Container", "Scan", "Deploy"];
@@ -1068,31 +1057,6 @@ function ConsoleScreen({
                 </div>
               </article>
             ))}
-          </div>
-        </section>
-
-        <section className="services-panel">
-          <div>
-            <h2>Local Platform Services</h2>
-            <p>Open local DevOps tools without exposing service passwords in the portal. API readiness is checked through the configured proxy.</p>
-          </div>
-          <div className="service-links">
-            {serviceLinks.map((service) => {
-              const serviceStatus = service.label === "API" ? (apiReady ? "Live" : "Check") : "Open";
-
-              return (
-                <a href={service.url} target="_blank" rel="noreferrer" key={service.label}>
-                  <Server size={18} />
-                  <span>
-                    <strong>{service.label}</strong>
-                    <small>{service.access}</small>
-                  </span>
-                  <code>{service.value}</code>
-                  <em className={`service-status ${serviceStatus.toLowerCase()}`}>{serviceStatus}</em>
-                  <ExternalLink size={16} />
-                </a>
-              );
-            })}
           </div>
         </section>
 
