@@ -9,10 +9,11 @@ mkdir -p build
 kubectl kustomize kubernetes/base > build/kubernetes-rendered.yaml
 ```
 
-## Build The API Image
+## Build Local Images
 
 ```bash
 docker build -t healthcare/exchange-api:local -f services/exchange-api/Dockerfile .
+docker build -t healthcare/portal:local -f services/portal/Dockerfile .
 ```
 
 ## Kind
@@ -20,10 +21,13 @@ docker build -t healthcare/exchange-api:local -f services/exchange-api/Dockerfil
 ```bash
 kind create cluster --name hde
 kind load docker-image healthcare/exchange-api:local --name hde
+kind load docker-image healthcare/portal:local --name hde
 kubectl apply --dry-run=client --validate=false -f build/kubernetes-rendered.yaml
 kubectl apply -k kubernetes/base
 kubectl -n healthcare-exchange rollout status deployment/exchange-api --timeout=180s
+kubectl -n healthcare-exchange rollout status deployment/exchange-portal --timeout=180s
 kubectl -n healthcare-exchange port-forward svc/exchange-api 8080:8080
+kubectl -n healthcare-exchange port-forward svc/exchange-portal 5173:80
 ```
 
 In another terminal:
@@ -38,10 +42,13 @@ Build the image into Docker Desktop, then apply the manifests:
 
 ```bash
 docker build -t healthcare/exchange-api:local -f services/exchange-api/Dockerfile .
+docker build -t healthcare/portal:local -f services/portal/Dockerfile .
 kubectl apply --dry-run=client --validate=false -f build/kubernetes-rendered.yaml
 kubectl apply -k kubernetes/base
 kubectl -n healthcare-exchange rollout status deployment/exchange-api --timeout=180s
+kubectl -n healthcare-exchange rollout status deployment/exchange-portal --timeout=180s
 kubectl -n healthcare-exchange port-forward svc/exchange-api 8080:8080
+kubectl -n healthcare-exchange port-forward svc/exchange-portal 5173:80
 ```
 
 In another terminal:
@@ -62,6 +69,7 @@ bash scripts/smoke-test.sh
 | `redis.yaml` | Redis Deployment and Service with resource limits and non-root security context. |
 | `minio.yaml` | MinIO Deployment, Service, health probes, and local PersistentVolumeClaim. |
 | `exchange-api.yaml` | API Service and two-replica Deployment with probes and Prometheus annotations. |
+| `portal.yaml` | Nginx-served portal Deployment and Service. |
 | `networkpolicy.yaml` | Default pod-to-pod policy with DNS egress. |
 | `hpa.yaml` | CPU-based API autoscaling from 2 to 6 replicas. |
 

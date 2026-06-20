@@ -52,12 +52,18 @@ recordsRouter.post("/", asyncHandler(async (req, res) => {
   );
 
   const record = recordResult.rows[0];
-  await pool.query(
+  const syncEventResult = await pool.query(
     `INSERT INTO sync_events (record_id, patient_id, event_type, status)
-     VALUES ($1, $2, $3, 'published')`,
+     VALUES ($1, $2, $3, 'queued')
+     RETURNING id`,
     [record.id, patient.id, "record.created"]
   );
-  await publishSyncEvent({ eventType: "record.created", recordId: record.id, patientId: patient.id });
+  await publishSyncEvent({
+    syncEventId: syncEventResult.rows[0]?.id,
+    eventType: "record.created",
+    recordId: record.id,
+    patientId: patient.id
+  });
   await writeAudit({
     actorOrgId: req.org?.id,
     action: "record.create",

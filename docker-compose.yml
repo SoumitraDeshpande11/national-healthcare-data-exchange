@@ -89,13 +89,6 @@ services:
     environment:
       NODE_ENV: production
       PORT: 8080
-      DATABASE_URL: postgres://hde:hde_password@postgres:5432/hde
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: local-dev-change-me-with-32-characters
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: soumitra
-      MINIO_SECRET_KEY: deshpande
-      MINIO_BUCKET: healthcare-documents
       VAULT_ENABLED: "true"
       VAULT_ADDR: http://vault:8200
       VAULT_TOKEN: root
@@ -127,6 +120,31 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  sync-worker:
+    build:
+      context: .
+      dockerfile: services/exchange-api/Dockerfile
+    command: ["node", "services/exchange-api/dist/syncWorker.js"]
+    environment:
+      NODE_ENV: production
+      VAULT_ENABLED: "true"
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: root
+      VAULT_SECRET_PATH: secret/data/hde/exchange-api
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_LOG_INDEX: hde-api-audit-direct
+      API_LOG_PATH: /var/log/hde/api.log
+      AUDIT_LOG_PATH: /var/log/hde/audit.log
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault-bootstrap:
+        condition: service_completed_successfully
+    volumes:
+      - hde-api-logs:/var/log/hde
 
   portal:
     build:

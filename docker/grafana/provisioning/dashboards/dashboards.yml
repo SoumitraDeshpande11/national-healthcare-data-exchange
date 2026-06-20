@@ -4,5 +4,8 @@ providers:
   - name: Healthcare Exchange
     folder: Healthcare Exchange
     type: file
+    disableDeletion: false
+    allowUiUpdates: false
+    updateIntervalSeconds: 10
     options:
       path: /etc/grafana/provisioning/dashboards

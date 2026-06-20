@@ -15,9 +15,16 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
       - run: npm ci || npm install
       - run: npm run validate
       - run: npm run build
+      - run: kubectl kustomize kubernetes/base > /tmp/kubernetes-rendered.yaml
+      - run: terraform -chdir=terraform/local fmt -check
+      - run: terraform -chdir=terraform/local init -backend=false
+      - run: terraform -chdir=terraform/local validate
       - run: docker build -t healthcare/exchange-api:ci -f services/exchange-api/Dockerfile .
       - run: docker build -t healthcare/portal:ci -f services/portal/Dockerfile .
 

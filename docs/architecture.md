@@ -10,6 +10,7 @@ The National Healthcare Data Exchange is implemented as a local, containerized d
 | Exchange API | TypeScript, Express, Zod, pg, Redis, prom-client | Authenticates organizations, enforces roles and patient grants, manages patients, records, documents, writes audits, publishes sync events, exposes metrics. |
 | PostgreSQL | `postgres:16-alpine` | Source of truth for organizations, patient grants, patients, clinical records, document metadata, sync events, and audit logs. |
 | Redis | `redis:7-alpine` | Pub/sub channel for `patient-record-sync` events after record creation. |
+| Sync worker | Node.js worker using Redis and PostgreSQL | Subscribes to `patient-record-sync` and marks queued sync events as published. |
 | MinIO | S3-compatible object store | Local object storage for uploaded patient documents. PostgreSQL stores document metadata and checksums. |
 | Vault | HashiCorp Vault dev server | Demonstrates secret policy and bootstrap workflow. |
 | Prometheus | Prometheus container | Scrapes `exchange-api:8080/metrics` and Jenkins `/prometheus/` metrics. |
@@ -29,9 +30,10 @@ The National Healthcare Data Exchange is implemented as a local, containerized d
 6. Hospital or agency users with patient access can grant the patient to another participant through `/patients/:nationalHealthId/access-grants`.
 7. Patient, record, and document reads require active patient consent plus either an agency token or an active patient access grant.
 8. Record and document creation also enforce organization type rules, such as labs creating `lab_result` records and `lab_report` documents.
-9. Record creation stores a JSONB clinical record, creates a `published` sync-event row, publishes to Redis on `patient-record-sync`, and writes a `record.create` audit event.
-10. Document upload stores the file in MinIO, stores metadata/checksum in PostgreSQL, publishes a sync event, and writes a `document.upload` audit event.
-11. Agency-only compliance routes summarize counts and return the latest audit events.
+9. Record creation stores a JSONB clinical record, creates a queued sync-event row, publishes to Redis on `patient-record-sync`, and writes a `record.create` audit event.
+10. Document upload stores the file in MinIO, stores metadata/checksum in PostgreSQL, creates a queued sync-event row, publishes to Redis, and writes a `document.upload` audit event.
+11. The sync worker consumes Redis sync messages and marks the matching sync-event row as `published`.
+12. Agency-only compliance routes summarize counts and return the latest audit events.
 
 ## Database Model
 
@@ -66,7 +68,7 @@ The API installs request metrics middleware and exposes Prometheus text metrics 
 
 Logs are emitted through Pino. Filebeat reads the API and audit log files from the shared log volume and ships them into Elasticsearch for Kibana exploration.
 
-`npm run validate:integrations` verifies the runtime connections: MinIO write/read/delete, Vault KV policy and secret readback, Jenkins job/tooling, Prometheus API and Jenkins targets, Grafana datasource proxy, Kibana availability, and Elasticsearch log ingestion from Filebeat.
+`npm run validate:integrations` verifies the runtime connections: MinIO write/read/delete, Vault KV policy and secret readback, Jenkins job/tooling, Redis sync-worker publication, Prometheus API and Jenkins targets, Grafana datasource proxy, Kibana availability, and Elasticsearch log ingestion from Filebeat.
 
 ## Local To Production-Style Mapping
 

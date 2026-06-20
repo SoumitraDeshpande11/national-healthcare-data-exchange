@@ -100,12 +100,18 @@ documentsRouter.post("/", upload.single("file"), asyncHandler(async (req, res) =
   );
 
   const document = documentResult.rows[0];
-  await pool.query(
+  const syncEventResult = await pool.query(
     `INSERT INTO sync_events (patient_id, event_type, status)
-     VALUES ($1, $2, 'published')`,
+     VALUES ($1, $2, 'queued')
+     RETURNING id`,
     [patient.id, "document.uploaded"]
   );
-  await publishSyncEvent({ eventType: "document.uploaded", patientId: patient.id, documentId: document.id });
+  await publishSyncEvent({
+    syncEventId: syncEventResult.rows[0]?.id,
+    eventType: "document.uploaded",
+    patientId: patient.id,
+    documentId: document.id
+  });
   await writeAudit({
     actorOrgId: req.org?.id,
     action: "document.upload",

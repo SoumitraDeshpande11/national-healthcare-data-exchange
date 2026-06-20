@@ -12,6 +12,7 @@ The default runtime is Docker Compose:
 - `portal`: React/Nginx portal on `http://localhost:5173`; Nginx proxies `/api/*` to `exchange-api`.
 - `postgres`: PostgreSQL system of record for organizations, patient grants, patients, clinical records, document metadata, sync events, and audit logs.
 - `redis`: Pub/sub bus used by record creation to publish `patient-record-sync` events.
+- `sync-worker`: Redis subscriber that marks queued patient-record sync events as published.
 - `minio`: S3-compatible object store for uploaded patient documents; record payloads stay in PostgreSQL JSONB.
 - `vault`: local dev Vault instance for secret-management policy examples.
 - `prometheus`: scrapes API metrics from `/metrics` and Jenkins metrics from `/prometheus/`.
@@ -40,7 +41,7 @@ The API starts by running database migrations from `services/exchange-api/src/db
 | `scripts/smoke-test.sh` | Verifies `/health/live`, `/health/ready`, agency token issuance, and agency compliance access. |
 | `scripts/seed-demo.sh` | Logs in as the hospital, upserts one demo patient, and publishes one encounter record. |
 | `scripts/compliance-check.sh` | Checks required governance files, scans for obvious secret material, and confirms route handlers call `writeAudit`. |
-| `scripts/validate-integrations.sh` | Verifies MinIO, Vault, Jenkins, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are connected. |
+| `scripts/validate-integrations.sh` | Verifies MinIO, Vault, Jenkins, Redis sync-worker, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are connected. |
 | `scripts/backup-local.sh` | Dumps PostgreSQL to `backups/YYYYMMDD-HHMMSS/postgres.sql` and attempts a MinIO mirror. |
 | `scripts/restore-local.sh` | Restores PostgreSQL from a selected local backup directory. |
 | `scripts/failover-drill.sh` | Stops and restarts the API container, then runs the smoke test. |
@@ -136,7 +137,7 @@ API keys are stored as SHA-256 hashes in the seeded `organizations` table. `/aut
    npm run validate:integrations
    ```
 
-   `npm run validate:integrations` proves that MinIO object storage, Vault secrets, Jenkins, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are all connected. Jenkins is available at `http://localhost:8081` with `soumitra` / `deshpande`. Open the `national-healthcare-data-exchange` job and run `Build with Parameters`. The default build installs dependencies, validates the app, builds it, renders Kubernetes manifests, and builds local Docker images. `RUN_LIVE_SMOKE` is off by default because it uses the same Compose ports as the running local stack.
+   `npm run validate:integrations` proves that MinIO object storage, Vault secrets, Jenkins, Redis sync-worker publication, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are all connected. Jenkins is available at `http://localhost:8081` with `soumitra` / `deshpande`. Open the `national-healthcare-data-exchange` job and run `Build with Parameters`. The default build installs dependencies, validates the app, builds it, renders Kubernetes manifests, and builds local Docker images. `RUN_LIVE_SMOKE` is off by default because it uses the same Compose ports as the running local stack.
 
 5. Seed demo data.
 

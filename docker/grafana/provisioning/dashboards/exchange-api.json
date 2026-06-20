@@ -1,9 +1,12 @@
 {
   "uid": "healthcare-exchange-api",
   "title": "Healthcare Exchange API",
+  "tags": ["healthcare", "exchange", "devops"],
+  "timezone": "browser",
   "schemaVersion": 39,
-  "version": 3,
+  "version": 4,
   "refresh": "15s",
+  "graphTooltip": 1,
   "time": {
     "from": "now-6h",
     "to": "now"
@@ -152,6 +155,66 @@
         }
       ],
       "gridPos": { "x": 6, "y": 30, "w": 6, "h": 6 }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Jenkins Executors Online",
+      "targets": [
+        {
+          "expr": "sum(default_jenkins_executors_online)",
+          "legendFormat": "executors"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 30, "w": 6, "h": 6 }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Jenkins Queue",
+      "targets": [
+        {
+          "expr": "sum(default_jenkins_executors_queue_length)",
+          "legendFormat": "queued"
+        }
+      ],
+      "gridPos": { "x": 18, "y": 30, "w": 6, "h": 6 }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "API Process Memory",
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes{job=\"exchange-api\"}",
+          "legendFormat": "rss"
+        },
+        {
+          "expr": "nodejs_heap_size_used_bytes{job=\"exchange-api\"}",
+          "legendFormat": "heap used"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 36, "w": 12, "h": 8 }
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Jenkins Jobs And Runs",
+      "targets": [
+        {
+          "expr": "jenkins_job_count_value",
+          "legendFormat": "jobs"
+        },
+        {
+          "expr": "increase(jenkins_runs_success_total[1h])",
+          "legendFormat": "successful runs 1h"
+        },
+        {
+          "expr": "increase(jenkins_runs_failure_total[1h])",
+          "legendFormat": "failed runs 1h"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 36, "w": 12, "h": 8 }
     }
   ]
 }
