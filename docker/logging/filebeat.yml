@@ -1,0 +1,57 @@
+filebeat.inputs:
+  - type: filestream
+    id: hde-api-json
+    enabled: true
+    paths:
+      - /var/log/hde/api.log
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+          add_error_key: true
+    fields_under_root: true
+    fields:
+      service.name: exchange-api
+      event.dataset: hde.api
+      log.type: api
+    processors:
+      - add_fields:
+          target: labels
+          fields:
+            application: national-healthcare-data-exchange
+            environment: local
+
+  - type: filestream
+    id: hde-api-audit-json
+    enabled: true
+    paths:
+      - /var/log/hde/audit.log
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+          add_error_key: true
+    fields_under_root: true
+    fields:
+      service.name: exchange-api
+      event.dataset: hde.audit
+      log.type: audit
+    processors:
+      - add_fields:
+          target: labels
+          fields:
+            application: national-healthcare-data-exchange
+            environment: local
+
+output.elasticsearch:
+  hosts: ["${ELASTICSEARCH_HOSTS:http://elasticsearch:9200}"]
+  index: "hde-api-logs-%{+yyyy.MM.dd}"
+
+setup.template.name: "hde-api-logs"
+setup.template.pattern: "hde-api-logs-*"
+setup.ilm.enabled: false
+
+setup.kibana:
+  host: "${KIBANA_HOST:http://kibana:5601}"
+
+logging.level: info

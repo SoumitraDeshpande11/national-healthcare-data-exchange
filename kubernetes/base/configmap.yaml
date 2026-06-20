@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exchange-config
+data:
+  NODE_ENV: production
+  PORT: "8080"
+  REDIS_URL: redis://redis:6379
+  MINIO_ENDPOINT: http://minio:9000
+  MINIO_BUCKET: healthcare-documents
+  AUDIT_LOG_PATH: /tmp/hde-audit.log

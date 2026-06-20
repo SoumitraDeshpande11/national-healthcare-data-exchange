@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: exchange-api
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: exchange-api-read-config
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: exchange-api-read-config
+subjects:
+  - kind: ServiceAccount
+    name: exchange-api
+roleRef:
+  kind: Role
+  name: exchange-api-read-config
+  apiGroup: rbac.authorization.k8s.io

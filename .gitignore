@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build and test outputs
+dist/
+build/
+coverage/
+*.tsbuildinfo
+test-results/
+playwright-report/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime logs and process files
+*.log
+*.pid
+*.pid.lock
+hde-audit.log
+
+# Local backup and scratch output
+backups/
+tmp/
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Terraform local state and provider cache
+terraform/**/.terraform/
+terraform/**/*.tfstate
+terraform/**/*.tfstate.*
+terraform/**/crash.log
+terraform/**/crash.*.log
+terraform/**/.terraform.tfstate.lock.info
+
+# OS/editor files
+.DS_Store

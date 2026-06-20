@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: exchange-portal
+  labels:
+    app: exchange-portal
+    app.kubernetes.io/name: exchange-portal
+    app.kubernetes.io/part-of: national-healthcare-data-exchange
+    app.kubernetes.io/component: portal
+spec:
+  selector:
+    app: exchange-portal
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exchange-portal
+  labels:
+    app.kubernetes.io/name: exchange-portal
+    app.kubernetes.io/part-of: national-healthcare-data-exchange
+    app.kubernetes.io/component: portal
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: exchange-portal
+  template:
+    metadata:
+      labels:
+        app: exchange-portal
+        app.kubernetes.io/name: exchange-portal
+        app.kubernetes.io/part-of: national-healthcare-data-exchange
+        app.kubernetes.io/component: portal
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exchange-portal
+          image: healthcare/exchange-portal:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: API_BASE_URL
+              value: http://exchange-api:8080
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 96Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

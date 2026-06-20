@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci || npm install
+      - run: npm run validate
+      - run: npm run build
+      - run: docker build -t healthcare/exchange-api:ci -f services/exchange-api/Dockerfile .
+      - run: docker build -t healthcare/portal:ci -f services/portal/Dockerfile .
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci || npm install
+      - name: Start API and portal stack
+        run: docker compose up -d --build postgres redis minio vault vault-bootstrap exchange-api portal
+      - name: Run live smoke checks
+        run: npm run validate:smoke
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v

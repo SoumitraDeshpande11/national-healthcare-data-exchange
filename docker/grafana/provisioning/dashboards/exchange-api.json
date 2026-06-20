@@ -1,0 +1,133 @@
+{
+  "uid": "healthcare-exchange-api",
+  "title": "Healthcare Exchange API",
+  "schemaVersion": 39,
+  "version": 2,
+  "refresh": "15s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "HTTP Duration p95",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(hde_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Request Rate",
+      "targets": [
+        {
+          "expr": "sum(rate(hde_http_request_duration_seconds_count[5m])) by (status_code)",
+          "legendFormat": "{{status_code}}"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Patient Registrations",
+      "targets": [
+        {
+          "expr": "sum(rate(hde_patient_registrations_total[5m])) by (org_type, consent_status)",
+          "legendFormat": "{{org_type}} / {{consent_status}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Record Publications",
+      "targets": [
+        {
+          "expr": "sum(rate(hde_record_publications_total[5m])) by (record_type)",
+          "legendFormat": "{{record_type}}"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Auth Failures",
+      "targets": [
+        {
+          "expr": "sum(rate(hde_auth_failures_total[5m])) by (auth_flow, reason)",
+          "legendFormat": "{{auth_flow}} / {{reason}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Document Upload Attempts",
+      "targets": [
+        {
+          "expr": "sum(rate(hde_document_uploads_total[5m])) by (outcome)",
+          "legendFormat": "{{outcome}}"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Registrations 24h",
+      "targets": [
+        {
+          "expr": "sum(increase(hde_patient_registrations_total[24h]))",
+          "legendFormat": "registrations"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 24, "w": 6, "h": 6 }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Records Published 24h",
+      "targets": [
+        {
+          "expr": "sum(increase(hde_record_publications_total[24h]))",
+          "legendFormat": "records"
+        }
+      ],
+      "gridPos": { "x": 6, "y": 24, "w": 6, "h": 6 }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Auth Failures 24h",
+      "targets": [
+        {
+          "expr": "sum(increase(hde_auth_failures_total[24h]))",
+          "legendFormat": "failures"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 24, "w": 6, "h": 6 }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Uploads 24h",
+      "targets": [
+        {
+          "expr": "sum(increase(hde_document_uploads_total[24h]))",
+          "legendFormat": "uploads"
+        }
+      ],
+      "gridPos": { "x": 18, "y": 24, "w": 6, "h": 6 }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+* @healthcare-platform/security-reviewers
+/security/ @healthcare-platform/security-reviewers
+/terraform/ @healthcare-platform/platform-reviewers
+/kubernetes/ @healthcare-platform/platform-reviewers
+/services/ @healthcare-platform/api-reviewers

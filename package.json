@@ -1,0 +1,35 @@
+{
+  "name": "national-healthcare-data-exchange",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-first cloud-native DevOps platform for secure healthcare data exchange.",
+  "workspaces": [
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace services/exchange-api run dev",
+    "portal:dev": "npm --workspace services/portal run dev",
+    "build": "npm run build:api && npm run build:portal",
+    "build:api": "npm --workspace services/exchange-api run build",
+    "build:portal": "npm --workspace services/portal run build",
+    "test": "npm --workspace services/exchange-api run test",
+    "lint": "npm --workspace services/exchange-api run lint",
+    "validate": "npm run lint && npm test && npm run validate:compliance && npm run build:portal",
+    "validate:api-authorization": "bash scripts/validate-api-authorization.sh",
+    "validate:compliance": "bash scripts/compliance-check.sh",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f exchange-api",
+    "smoke": "bash scripts/smoke-test.sh",
+    "validate:smoke": "bash scripts/smoke-test.sh",
+    "validate:integrations": "bash scripts/validate-integrations.sh",
+    "validate:minio": "node scripts/validate-minio.mjs",
+    "validate:vault": "bash scripts/validate-vault.sh",
+    "validate:observability": "bash scripts/validate-observability.sh",
+    "dr:backup": "bash scripts/backup-local.sh",
+    "dr:restore": "bash scripts/restore-local.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
