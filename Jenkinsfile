@@ -3,10 +3,11 @@ pipeline {
 
   parameters {
     booleanParam(name: 'BUILD_CONTAINER', defaultValue: true, description: 'Build the local exchange-api and portal container images.')
-    booleanParam(name: 'RUN_LIVE_SMOKE', defaultValue: false, description: 'Run Docker Compose smoke tests. Use only when host ports are free or the local stack may be restarted.')
+    booleanParam(name: 'VERIFY_RUNNING_PLATFORM', defaultValue: true, description: 'Verify the already-running Compose platform from inside Jenkins without stopping it.')
+    booleanParam(name: 'RUN_LIVE_SMOKE', defaultValue: false, description: 'Start and stop a reduced Docker Compose smoke stack. Use only when host ports are free or the local stack may be restarted.')
     booleanParam(name: 'RUN_TRIVY', defaultValue: false, description: 'Run Trivy image scan when Docker is available.')
     booleanParam(name: 'DEPLOY_LOCAL_K8S', defaultValue: false, description: 'Apply manifests to the currently configured local Kubernetes cluster.')
-    booleanParam(name: 'RUN_TERRAFORM', defaultValue: false, description: 'Run Terraform init/validate/plan for terraform/local.')
+    booleanParam(name: 'RUN_TERRAFORM', defaultValue: true, description: 'Run Terraform init/validate/plan for terraform/local.')
   }
 
   environment {
@@ -81,6 +82,15 @@ pipeline {
             terraform plan -input=false -out=tfplan
           '''
         }
+      }
+    }
+
+    stage('Verify Running Platform') {
+      when {
+        expression { return params.VERIFY_RUNNING_PLATFORM }
+      }
+      steps {
+        sh 'npm run validate:jenkins-platform'
       }
     }
 

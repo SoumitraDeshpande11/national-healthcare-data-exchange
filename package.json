@@ -23,6 +23,7 @@
     "smoke": "bash scripts/smoke-test.sh",
     "validate:smoke": "bash scripts/smoke-test.sh",
     "validate:integrations": "bash scripts/validate-integrations.sh",
+    "validate:jenkins-platform": "bash scripts/validate-jenkins-platform.sh",
     "validate:jenkins": "bash scripts/validate-jenkins.sh",
     "validate:sync": "bash scripts/validate-sync.sh",
     "validate:minio": "node scripts/validate-minio.mjs",

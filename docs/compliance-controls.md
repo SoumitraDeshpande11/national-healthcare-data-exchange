@@ -54,7 +54,13 @@ Run after `docker compose up -d --build`:
 npm run validate:integrations
 ```
 
-This verifies MinIO, Vault, Jenkins, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion. To make the Jenkins validator trigger a safe build with Docker image build and live smoke disabled, run:
+This verifies MinIO, Vault, Jenkins, Redis sync-worker, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion. Jenkins runs the equivalent platform check with Docker service names through:
+
+```bash
+npm run validate:jenkins-platform
+```
+
+To make the Jenkins validator trigger a safe build with Docker image build, running-platform verification, live smoke, Trivy, Terraform, and Kubernetes deploy disabled, run:
 
 ```bash
 RUN_JENKINS_BUILD=true npm run validate:jenkins

@@ -29,10 +29,11 @@ pipeline {
 
   parameters {
     booleanParam(name: 'BUILD_CONTAINER', defaultValue: true, description: 'Build API and portal Docker images.')
-    booleanParam(name: 'RUN_LIVE_SMOKE', defaultValue: false, description: 'Run Docker Compose smoke test. Stop the regular local stack first if host ports are busy.')
+    booleanParam(name: 'VERIFY_RUNNING_PLATFORM', defaultValue: true, description: 'Verify the already-running Compose platform from inside Jenkins without stopping it.')
+    booleanParam(name: 'RUN_LIVE_SMOKE', defaultValue: false, description: 'Start and stop a reduced Docker Compose smoke stack. Stop the regular local stack first if host ports are busy.')
     booleanParam(name: 'RUN_TRIVY', defaultValue: false, description: 'Run Trivy image scan.')
     booleanParam(name: 'DEPLOY_LOCAL_K8S', defaultValue: false, description: 'Apply manifests to the configured local Kubernetes cluster.')
-    booleanParam(name: 'RUN_TERRAFORM', defaultValue: false, description: 'Run Terraform validation and plan for terraform/local.')
+    booleanParam(name: 'RUN_TERRAFORM', defaultValue: true, description: 'Run Terraform validation and plan for terraform/local.')
   }
 
   environment {
@@ -122,6 +123,15 @@ pipeline {
       }
     }
 
+    stage('Verify Running Platform') {
+      when {
+        expression { return params.VERIFY_RUNNING_PLATFORM }
+      }
+      steps {
+        sh 'npm run validate:jenkins-platform'
+      }
+    }
+
     stage('Live Integration Smoke') {
       when {
         expression { return params.RUN_LIVE_SMOKE }
@@ -177,10 +187,11 @@ job.setDefinition(new CpsFlowDefinition(script, true))
 job.removeProperty(ParametersDefinitionProperty)
 job.addProperty(new ParametersDefinitionProperty([
   new BooleanParameterDefinition('BUILD_CONTAINER', true, 'Build API and portal Docker images.'),
-  new BooleanParameterDefinition('RUN_LIVE_SMOKE', false, 'Run Docker Compose smoke test. Stop the regular local stack first if host ports are busy.'),
+  new BooleanParameterDefinition('VERIFY_RUNNING_PLATFORM', true, 'Verify the already-running Compose platform from inside Jenkins without stopping it.'),
+  new BooleanParameterDefinition('RUN_LIVE_SMOKE', false, 'Start and stop a reduced Docker Compose smoke stack. Stop the regular local stack first if host ports are busy.'),
   new BooleanParameterDefinition('RUN_TRIVY', false, 'Run Trivy image scan.'),
   new BooleanParameterDefinition('DEPLOY_LOCAL_K8S', false, 'Apply manifests to the configured local Kubernetes cluster.'),
-  new BooleanParameterDefinition('RUN_TERRAFORM', false, 'Run Terraform validation and plan for terraform/local.')
+  new BooleanParameterDefinition('RUN_TERRAFORM', true, 'Run Terraform validation and plan for terraform/local.')
 ]))
 job.save()
 jenkins.save()

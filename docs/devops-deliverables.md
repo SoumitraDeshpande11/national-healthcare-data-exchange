@@ -21,16 +21,21 @@ npm test
 bash scripts/compliance-check.sh
 npm run build
 kubectl kustomize kubernetes/base
+terraform -chdir=terraform/local fmt -check
+terraform -chdir=terraform/local init -backend=false
+terraform -chdir=terraform/local validate
+npm run validate:jenkins-platform
 docker build -t healthcare/exchange-api:ci-<build> -t healthcare/exchange-api:local -f services/exchange-api/Dockerfile .
 ```
 
-Optional Jenkins parameters:
+Jenkins parameters:
 
 - `BUILD_CONTAINER`: builds the local API image.
+- `VERIFY_RUNNING_PLATFORM`: verifies the already-running Compose platform from inside Jenkins without stopping it. Enabled by default.
 - `RUN_LIVE_SMOKE`: starts the Compose application stack and runs smoke tests. It is disabled by default because it uses the same host ports as the regular local stack.
 - `RUN_TRIVY`: runs `npm audit` and Trivy against the built image.
 - `DEPLOY_LOCAL_K8S`: applies `kubernetes/base` to the current kubeconfig context.
-- `RUN_TERRAFORM`: runs `terraform fmt -check`, `terraform init -backend=false`, `terraform validate`, and `terraform plan`.
+- `RUN_TERRAFORM`: runs `terraform fmt -check`, `terraform init -backend=false`, `terraform validate`, and `terraform plan`. Enabled by default.
 
 Validate Jenkins itself:
 
@@ -39,7 +44,9 @@ npm run validate:jenkins
 RUN_JENKINS_BUILD=true npm run validate:jenkins
 ```
 
-The first command checks Jenkins readiness, job parameters, and installed CI tools. The second also triggers a safe validation build with image builds, live smoke, Trivy, Terraform, and Kubernetes deployment disabled.
+The first command checks Jenkins readiness, job parameters, and installed CI tools. The second also triggers a safe validation build with image builds, running-platform verification, live smoke, Trivy, Terraform, and Kubernetes deployment disabled.
+
+Jenkins is the primary self-hosted pipeline for the project. GitHub Actions remains as a repository-side backup validator for pushes and pull requests.
 
 ## Kubernetes
 

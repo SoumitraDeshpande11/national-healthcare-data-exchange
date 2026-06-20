@@ -15,7 +15,7 @@ The National Healthcare Data Exchange is implemented as a local, containerized d
 | Vault | HashiCorp Vault dev server | Demonstrates secret policy and bootstrap workflow. |
 | Prometheus | Prometheus container | Scrapes `exchange-api:8080/metrics` and Jenkins `/prometheus/` metrics. |
 | Grafana | Grafana container | Local monitoring UI with a provisioned Prometheus datasource and API/Jenkins dashboard panels. |
-| Jenkins | Custom Jenkins LTS container | Runs a local pipeline for install, validation, builds, manifest rendering, optional smoke tests, image scans, Terraform, and local Kubernetes deploys; exposes Prometheus metrics. |
+| Jenkins | Custom Jenkins LTS container | Runs the primary local pipeline for install, validation, builds, manifest rendering, Terraform validation, running-platform verification, optional smoke tests, image scans, and local Kubernetes deploys; exposes Prometheus metrics. |
 | Elasticsearch/Kibana | Elastic containers plus Filebeat | Local log-search stack for API and audit log files. |
 | Kubernetes | Kustomize manifests | Local orchestration target for API, PostgreSQL, Redis, MinIO, RBAC, network policy, and HPA. |
 | Terraform | Kubernetes and Helm providers | Local governance namespace/config map and optional monitoring stack install. |

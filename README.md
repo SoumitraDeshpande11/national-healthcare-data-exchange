@@ -41,12 +41,13 @@ The API starts by running database migrations from `services/exchange-api/src/db
 | `scripts/smoke-test.sh` | Verifies `/health/live`, `/health/ready`, agency token issuance, and agency compliance access. |
 | `scripts/seed-demo.sh` | Logs in as the hospital, upserts one demo patient, and publishes one encounter record. |
 | `scripts/compliance-check.sh` | Checks required governance files, scans for obvious secret material, and confirms route handlers call `writeAudit`. |
-| `scripts/validate-integrations.sh` | Verifies MinIO, Vault, Jenkins, Redis sync-worker, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are connected. |
+| `scripts/validate-integrations.sh` | Verifies MinIO, Vault, Jenkins, Redis sync-worker, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are connected from the host. |
+| `scripts/validate-jenkins-platform.sh` | Jenkins-safe full platform verification using Docker service names instead of host `localhost` ports. |
 | `scripts/backup-local.sh` | Dumps PostgreSQL to `backups/YYYYMMDD-HHMMSS/postgres.sql` and attempts a MinIO mirror. |
 | `scripts/restore-local.sh` | Restores PostgreSQL from a selected local backup directory. |
 | `scripts/failover-drill.sh` | Stops and restarts the API container, then runs the smoke test. |
-| `Jenkinsfile` | Jenkins pipeline for install, typecheck, compliance check, tests, build, container build, audit/Trivy scan, and local Kubernetes deploy. |
-| `.github/workflows/ci.yml` | GitHub Actions validation for install, lint/typecheck, tests, compliance check, and API image build. |
+| `Jenkinsfile` | Primary self-hosted pipeline for install, validation, build, Terraform validation, Kubernetes rendering, full platform verification, container build, optional Trivy scan, and optional local Kubernetes deploy. |
+| `.github/workflows/ci.yml` | Repository backup CI for install, validation, build, Terraform validation, Kubernetes rendering, image builds, and smoke checks. |
 | `kubernetes/base` | Kustomize manifests for namespace, RBAC, secrets, config, PostgreSQL, Redis, MinIO, API deployment, network policy, and HPA. |
 | `terraform/local` | Local Kubernetes governance namespace/config map and optional kube-prometheus-stack Helm release. |
 | `security/vault` | Vault KV policy and bootstrap script for local secret examples. |
@@ -137,7 +138,7 @@ API keys are stored as SHA-256 hashes in the seeded `organizations` table. `/aut
    npm run validate:integrations
    ```
 
-   `npm run validate:integrations` proves that MinIO object storage, Vault secrets, Jenkins, Redis sync-worker publication, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are all connected. Jenkins is available at `http://localhost:8081` with `soumitra` / `deshpande`. Open the `national-healthcare-data-exchange` job and run `Build with Parameters`. The default build installs dependencies, validates the app, builds it, renders Kubernetes manifests, and builds local Docker images. `RUN_LIVE_SMOKE` is off by default because it uses the same Compose ports as the running local stack.
+   `npm run validate:integrations` proves that MinIO object storage, Vault secrets, Jenkins, Redis sync-worker publication, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are all connected. Jenkins is available at `http://localhost:8081` with `soumitra` / `deshpande`. Open the `national-healthcare-data-exchange` job and run `Build with Parameters`. The default Jenkins build installs dependencies, validates the app, builds it, renders Kubernetes manifests, validates Terraform, verifies the already-running platform through `npm run validate:jenkins-platform`, and builds local Docker images. `RUN_LIVE_SMOKE` is off by default because it starts/stops Compose services and can disrupt the regular demo stack.
 
 5. Seed demo data.
 

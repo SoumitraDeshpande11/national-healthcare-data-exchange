@@ -46,6 +46,7 @@ trigger_safe_build() {
     -X POST \
     -H "$crumb_field: $crumb_value" \
     --data-urlencode BUILD_CONTAINER=false \
+    --data-urlencode VERIFY_RUNNING_PLATFORM=false \
     --data-urlencode RUN_LIVE_SMOKE=false \
     --data-urlencode RUN_TRIVY=false \
     --data-urlencode DEPLOY_LOCAL_K8S=false \
@@ -101,7 +102,7 @@ if [[ "$(jq -r '.buildable' <<<"$job")" != "true" ]]; then
 fi
 
 parameters="$(jenkins_get --globoff "$JENKINS_URL/job/$JENKINS_JOB/api/json?tree=property[parameterDefinitions[name]]")"
-for parameter in BUILD_CONTAINER RUN_LIVE_SMOKE RUN_TRIVY DEPLOY_LOCAL_K8S RUN_TERRAFORM; do
+for parameter in BUILD_CONTAINER VERIFY_RUNNING_PLATFORM RUN_LIVE_SMOKE RUN_TRIVY DEPLOY_LOCAL_K8S RUN_TERRAFORM; do
   if ! jq -e --arg parameter "$parameter" \
     'any(.property[].parameterDefinitions[]?; .name == $parameter)' <<<"$parameters" >/dev/null; then
     echo "Jenkins job $JENKINS_JOB is missing parameter $parameter" >&2
