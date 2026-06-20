@@ -13,24 +13,18 @@ import {
   FilePlus2,
   FileText,
   Gauge,
-  HardDriveUpload,
   History,
   Hospital,
   KeyRound,
-  Layers3,
-  LockKeyhole,
   LogIn,
   LogOut,
-  Network,
   Pill,
   RefreshCcw,
   Search,
   ShieldCheck,
-  Stethoscope,
   TestTube2,
   UploadCloud,
-  UserRoundPlus,
-  Workflow
+  UserRoundPlus
 } from "lucide-react";
 import "./styles.css";
 
@@ -89,44 +83,10 @@ const organizations: Organization[] = [
 ];
 
 const platformStats = [
-  { label: "Target volume", value: "100M+", detail: "records" },
-  { label: "Exchange modes", value: "5", detail: "org roles" },
-  { label: "Runtime", value: "Local", detail: "Docker stack" },
-  { label: "Controls", value: "RBAC", detail: "audit + secrets" }
-];
-
-const architectureCards = [
-  {
-    icon: <Workflow />,
-    title: "Interoperability APIs",
-    text: "Containerized services expose patient, record, auth, compliance, and health endpoints."
-  },
-  {
-    icon: <Network />,
-    title: "Realtime Sync",
-    text: "Record writes publish sync events so downstream participants can converge quickly."
-  },
-  {
-    icon: <LockKeyhole />,
-    title: "Security Controls",
-    text: "Scoped JWTs, RBAC routes, audit logging, Vault-backed configuration, and encrypted stores."
-  },
-  {
-    icon: <HardDriveUpload />,
-    title: "Disaster Recovery",
-    text: "Local backup and failover scripts demonstrate recovery procedures for the platform."
-  }
-];
-
-const pipelineSteps = ["Commit", "Lint", "Compliance", "Tests", "Build", "Container", "Scan", "Deploy"];
-
-const complianceControls = [
-  { id: "AUTH", label: "Authentication", evidence: "Scoped JWT issued" },
-  { id: "RBAC", label: "Role-Based Access", evidence: "Agency routes gated" },
-  { id: "AUD", label: "Audit Logging", evidence: "Events queryable" },
-  { id: "DOC", label: "Document Exchange", evidence: "/documents active" },
-  { id: "NET", label: "Network Policy", evidence: "Local stack isolated" },
-  { id: "DR", label: "Disaster Recovery", evidence: "Recovery workflow available" }
+  { label: "Record scale", value: "100M+", detail: "ready" },
+  { label: "Participants", value: "5", detail: "roles" },
+  { label: "Consent", value: "Active", detail: "gated" },
+  { label: "Audit trail", value: "Live", detail: "review" }
 ];
 
 const exchangeNodes = ["Hospital", "Lab", "Pharmacy", "Insurer"];
@@ -191,7 +151,7 @@ type Notice = {
 
 type Screen = "landing" | "login" | "console";
 
-function demoApiKeyFor(org: Organization) {
+function apiKeyForOrg(org: Organization) {
   const keyPrefix = org.type === "laboratory" ? "lab" : org.type;
   return [keyPrefix, "local", "api", "key"].join("-");
 }
@@ -280,7 +240,7 @@ function App() {
       setNotice({ tone: "idle", text: `Signing in as ${org.shortName}...` });
       const result = await request<TokenResponse>("/auth/token", undefined, {
         method: "POST",
-        body: JSON.stringify({ apiKey: demoApiKeyFor(org) })
+        body: JSON.stringify({ apiKey: apiKeyForOrg(org) })
       });
       setToken(result.accessToken);
       setScreen("console");
@@ -595,11 +555,6 @@ function LandingScreen({
             <small>National Healthcare Data Exchange</small>
           </span>
         </a>
-        <nav aria-label="Landing sections">
-          <a href="#platform">Platform</a>
-          <a href="#architecture">Architecture</a>
-          <a href="#operations">Operations</a>
-        </nav>
         <button className="primary" onClick={onOpenLogin}>
           <LogIn size={18} />
           Login
@@ -609,10 +564,10 @@ function LandingScreen({
       <section className="hero" id="top">
         <div className="hero-copy">
           <span className="eyebrow">Government Healthcare Interoperability</span>
-          <h1>Secure nationwide patient record exchange, built as a local DevOps platform.</h1>
+          <h1>Secure patient record exchange for authorized healthcare organizations.</h1>
           <p>
-            A production-style project for hospitals, labs, pharmacies, insurers, and a national agency to exchange records with RBAC,
-            audit logs, sync events, monitoring, compliance checks, and recovery workflows.
+            Hospitals, laboratories, pharmacies, insurers, and the national health agency can coordinate patient records, documents,
+            consent, and audit activity through one controlled exchange.
           </p>
           <div className="hero-actions">
             <button className="primary large" onClick={onOpenLogin}>
@@ -621,12 +576,12 @@ function LandingScreen({
             </button>
             <button className="secondary large" onClick={onCheckApi}>
               <Gauge size={19} />
-              Check API
+              Check Status
             </button>
           </div>
           <div className={`hero-status ${apiReady ? "ok" : "down"}`} role="status" aria-live="polite">
             {apiReady ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-            Local API is {apiReady ? "ready" : "not reachable"}
+            Exchange is {apiReady ? "available" : "unavailable"}
           </div>
         </div>
 
@@ -639,8 +594,8 @@ function LandingScreen({
           <div className="visual-grid">
             <div className="agency-node">
               <ShieldCheck size={32} />
-              <strong>Agency Exchange Core</strong>
-              <small>RBAC, audit, sync, DR</small>
+              <strong>National Exchange Core</strong>
+              <small>Consent, access, audit</small>
             </div>
             {exchangeNodes.map((node, index) => (
               <div className={`participant-node node-${index + 1}`} key={node}>
@@ -655,16 +610,16 @@ function LandingScreen({
           </div>
           <div className="visual-footer">
             <div>
-              <span>FHIR-like records</span>
-              <strong>Streaming</strong>
+              <span>Records</span>
+              <strong>Synchronized</strong>
             </div>
             <div>
-              <span>Compliance</span>
-              <strong>Verified</strong>
+              <span>Consent</span>
+              <strong>Enforced</strong>
             </div>
             <div>
-              <span>Failover</span>
-              <strong>Ready</strong>
+              <span>Access</span>
+              <strong>Audited</strong>
             </div>
           </div>
         </div>
@@ -678,57 +633,6 @@ function LandingScreen({
             <small>{stat.detail}</small>
           </article>
         ))}
-      </section>
-
-      <section className="landing-section" id="platform">
-        <div className="section-kicker">
-          <span className="eyebrow">Project Scope</span>
-          <h2>Everything expected in a full DevOps healthcare exchange demo.</h2>
-        </div>
-        <div className="feature-grid">
-          {architectureCards.map((card) => (
-            <article className="feature-card" key={card.title}>
-              <span className="feature-icon">{card.icon}</span>
-              <h3>{card.title}</h3>
-              <p>{card.text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section split-section" id="architecture">
-        <div>
-          <span className="eyebrow">Architecture</span>
-          <h2>Local cloud-native stack running as containers on your laptop.</h2>
-          <p>
-            Docker Compose runs the exchange API, portal, PostgreSQL, Redis, MinIO, Vault, Prometheus, Grafana, Elasticsearch, and
-            Kibana locally. The project also includes DevOps artifacts for Jenkins, Kubernetes, Terraform-style infrastructure, backup,
-            failover, and compliance validation.
-          </p>
-        </div>
-        <div className="stack-list">
-          {["React Portal", "TypeScript API", "PostgreSQL", "Redis Sync", "Vault Secrets", "Prometheus", "Grafana", "ELK Logs"].map(
-            (item) => (
-              <span key={item}>{item}</span>
-            )
-          )}
-        </div>
-      </section>
-
-      <section className="landing-section" id="operations">
-        <div className="section-kicker">
-          <span className="eyebrow">Operational Evidence</span>
-          <h2>Login to run the exchange workflows.</h2>
-        </div>
-        <div className="role-preview">
-          {organizations.map((org) => (
-            <article key={org.type}>
-              <span>{org.icon}</span>
-              <strong>{org.shortName}</strong>
-              <p>{org.capabilities.join(" / ")}</p>
-            </article>
-          ))}
-        </div>
       </section>
     </main>
   );
@@ -765,7 +669,7 @@ function LoginScreen({
           <div>
             <span className="eyebrow">Secure Access</span>
             <h1>Choose your organization role.</h1>
-            <p>Each demo role signs in with a local API key and receives a scoped JWT from the exchange API.</p>
+            <p>Select the organization you represent to open the workflows authorized for that participant.</p>
           </div>
         </div>
 
@@ -796,14 +700,14 @@ function LoginScreen({
           </button>
           <button className="secondary large" onClick={onCheckApi}>
             <Gauge size={19} />
-            API {apiReady ? "Ready" : "Check"}
+            System {apiReady ? "Available" : "Check"}
           </button>
         </div>
       </section>
 
       <aside className="login-aside">
         <span className="eyebrow">Access Model</span>
-        <h2>Role-based workflows are separated before the console loads.</h2>
+        <h2>Each participant sees workflows matched to its care role.</h2>
         <div className="capability-list">
           {selectedOrg.capabilities.map((capability) => (
             <span key={capability}>
@@ -813,9 +717,9 @@ function LoginScreen({
           ))}
         </div>
         <div className="auth-box">
-          <small>Demo credential handling</small>
-          <strong>Masked in portal UI</strong>
-          <p>The portal submits the selected role to the local auth endpoint and only displays session status.</p>
+          <small>Session Security</small>
+          <strong>Scoped organization access</strong>
+          <p>Access is limited by organization role, patient consent, and patient-specific grants.</p>
         </div>
       </aside>
     </main>
@@ -893,65 +797,8 @@ function ConsoleScreen({
   summary: Summary | null;
   syncStatus: string;
 }) {
-  const demoSteps = [
-    {
-      title: "Verify API readiness",
-      detail: apiReady ? "Local exchange API accepted the latest readiness probe." : "Run Refresh or Check API before starting writes.",
-      status: apiReady ? "complete" : "attention"
-    },
-    {
-      title: `Work as ${selectedOrg.shortName}`,
-      detail: "A scoped session is active for the selected organization role.",
-      status: "complete"
-    },
-    {
-      title: "Publish exchange data",
-      detail: records.length > 0 ? `${records.length} record(s) loaded in the current lookup.` : "Register a patient or publish a clinical record, then search the patient ID.",
-      status: records.length > 0 ? "complete" : "pending"
-    },
-    {
-      title: "Exercise document exchange",
-      detail: documents.length > 0 ? `${documents.length} document(s) returned by ${DOCUMENTS_API.patient(documentSearchId)}.` : "Upload or search patient documents through the canonical /documents API.",
-      status: documents.length > 0 ? "complete" : "pending"
-    },
-    {
-      title: "Review audit trail",
-      detail: isAgency
-        ? auditEvents.length > 0
-          ? `${auditEvents.length} audit event(s) loaded for agency review.`
-          : "Load agency audit events after running a workflow."
-        : "Switch to the agency role to view audit events.",
-      status: auditEvents.length > 0 ? "complete" : isAgency ? "pending" : "locked"
-    }
-  ];
-
-  const operationsSnapshot = [
-    {
-      label: "API readiness",
-      value: apiReady ? "Ready" : "Unavailable",
-      detail: lastHealthCheck ? `Checked ${lastHealthCheck.toLocaleTimeString()}` : "No health check yet",
-      tone: apiReady ? "ok" : "down"
-    },
-    {
-      label: "Document API",
-      value: DOCUMENTS_API.collection,
-      detail: "Upload, list, and download flow",
-      tone: "ok"
-    },
-    {
-      label: "Current lookup",
-      value: records.length ? `${records.length} record(s)` : "No records loaded",
-      detail: searchId,
-      tone: records.length ? "ok" : "idle"
-    },
-    {
-      label: "Audit access",
-      value: isAgency ? `${auditEvents.length} event(s)` : "Role gated",
-      detail: isAgency ? "Agency session can load events" : "Agency role required",
-      tone: auditEvents.length ? "ok" : "idle"
-    }
-  ];
   const canGrantAccess = selectedOrg.type === "agency" || selectedOrg.type === "hospital";
+  const lastHealthCheckText = lastHealthCheck ? `Checked ${lastHealthCheck.toLocaleTimeString()}` : "No health check yet";
 
   return (
     <main className="console-shell">
@@ -982,10 +829,6 @@ function ConsoleScreen({
             <Gauge size={18} />
             Overview
           </a>
-          <a href="#demo">
-            <Workflow size={18} />
-            Demo Flow
-          </a>
           <a href="#patients">
             <UserRoundPlus size={18} />
             Patients
@@ -1015,12 +858,12 @@ function ConsoleScreen({
           <div>
             <span className="eyebrow">Operating Console</span>
             <h1>Healthcare Data Exchange</h1>
-            <p>Run patient, record, audit, monitoring, and compliance workflows from one local interface.</p>
+            <p>Manage patient records, documents, access grants, and audit activity from one exchange console.</p>
           </div>
           <div className="topbar-actions">
-            <span className={`health-pill ${apiReady ? "ok" : "down"}`}>
+            <span className={`health-pill ${apiReady ? "ok" : "down"}`} title={lastHealthCheckText}>
               {apiReady ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              API {apiReady ? "Ready" : "Down"}
+              System {apiReady ? "Available" : "Unavailable"}
             </span>
             <button onClick={onRefresh}>
               <RefreshCcw size={18} />
@@ -1033,79 +876,7 @@ function ConsoleScreen({
           <Metric icon={<Database />} label="Patients" value={summary?.patients ?? "-"} tone="blue" />
           <Metric icon={<ClipboardList />} label="Records" value={summary?.records ?? "-"} tone="green" />
           <Metric icon={<History />} label="Audit Events" value={summary?.auditEvents ?? "-"} tone="amber" />
-          <Metric icon={<Activity />} label="Sync Events" value={syncStatus} tone="red" />
-        </section>
-
-        <section className="guided-demo panel full" id="demo">
-          <div className="section-title">
-            <div>
-              <h2>Guided Demo Flow</h2>
-              <p>Follow the live workflow from API readiness through document exchange and audit review.</p>
-            </div>
-            <span className={`health-pill ${apiReady ? "ok" : "down"}`}>
-              {apiReady ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              {apiReady ? "Ready to demo" : "API check needed"}
-            </span>
-          </div>
-          <div className="demo-steps">
-            {demoSteps.map((step, index) => (
-              <article className={`demo-step ${step.status}`} key={step.title}>
-                <span>{index + 1}</span>
-                <div>
-                  <strong>{step.title}</strong>
-                  <p>{step.detail}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="evidence-grid">
-          <article className="panel">
-            <div className="panel-heading">
-              <Activity size={20} />
-              <h2>Operations Snapshot</h2>
-            </div>
-            <div className="snapshot-grid">
-              {operationsSnapshot.map((item) => (
-                <article className={item.tone} key={item.label}>
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
-                  <small>{item.detail}</small>
-                </article>
-              ))}
-            </div>
-          </article>
-
-          <article className="panel">
-            <div className="panel-heading">
-              <Layers3 size={20} />
-              <h2>CI/CD Pipeline</h2>
-            </div>
-            <div className="pipeline">
-              {pipelineSteps.map((step) => (
-                <span key={step}>{step}</span>
-              ))}
-            </div>
-          </article>
-        </section>
-
-        <section className="panel full">
-          <div className="section-title">
-            <div>
-              <h2>Compliance Control Matrix</h2>
-              <p>Implemented controls with demo evidence from the local DevOps stack.</p>
-            </div>
-          </div>
-          <div className="control-matrix">
-            {complianceControls.map((control) => (
-              <article key={control.id}>
-                <strong>{control.id}</strong>
-                <span>{control.label}</span>
-                <code>{control.evidence}</code>
-              </article>
-            ))}
-          </div>
+          <Metric icon={<Activity />} label="Sync Status" value={syncStatus} tone="red" />
         </section>
 
         <section className="grid">
