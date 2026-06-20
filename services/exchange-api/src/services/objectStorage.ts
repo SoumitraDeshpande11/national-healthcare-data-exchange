@@ -4,6 +4,7 @@ import {
   CreateBucketCommand,
   GetObjectCommand,
   HeadBucketCommand,
+  ListBucketsCommand,
   PutObjectCommand,
   S3Client
 } from "@aws-sdk/client-s3";
@@ -29,6 +30,10 @@ export async function ensureDocumentBucket() {
     await s3.send(new CreateBucketCommand({ Bucket: env.MINIO_BUCKET }));
     logger.info({ bucket: env.MINIO_BUCKET }, "created MinIO document bucket");
   }
+}
+
+export async function checkObjectStorage() {
+  await s3.send(new ListBucketsCommand({}));
 }
 
 export function buildDocumentObjectKey(patientId: string, fileName: string) {

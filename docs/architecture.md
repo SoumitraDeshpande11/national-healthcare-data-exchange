@@ -12,9 +12,9 @@ The National Healthcare Data Exchange is implemented as a local, containerized d
 | Redis | `redis:7-alpine` | Pub/sub channel for `patient-record-sync` events after record creation. |
 | MinIO | S3-compatible object store | Local object storage for uploaded patient documents. PostgreSQL stores document metadata and checksums. |
 | Vault | HashiCorp Vault dev server | Demonstrates secret policy and bootstrap workflow. |
-| Prometheus | Prometheus container | Scrapes `exchange-api:8080/metrics`. |
-| Grafana | Grafana container | Local monitoring UI and provisioned dashboard location. |
-| Jenkins | Custom Jenkins LTS container | Runs a local pipeline for install, validation, builds, manifest rendering, optional smoke tests, image scans, Terraform, and local Kubernetes deploys. |
+| Prometheus | Prometheus container | Scrapes `exchange-api:8080/metrics` and Jenkins `/prometheus/` metrics. |
+| Grafana | Grafana container | Local monitoring UI with a provisioned Prometheus datasource and API/Jenkins dashboard panels. |
+| Jenkins | Custom Jenkins LTS container | Runs a local pipeline for install, validation, builds, manifest rendering, optional smoke tests, image scans, Terraform, and local Kubernetes deploys; exposes Prometheus metrics. |
 | Elasticsearch/Kibana | Elastic containers plus Filebeat | Local log-search stack for API and audit log files. |
 | Kubernetes | Kustomize manifests | Local orchestration target for API, PostgreSQL, Redis, MinIO, RBAC, network policy, and HPA. |
 | Terraform | Kubernetes and Helm providers | Local governance namespace/config map and optional monitoring stack install. |
@@ -62,9 +62,11 @@ The audit service also appends newline-delimited JSON to `AUDIT_LOG_PATH`, defau
 
 ## Observability
 
-The API installs request metrics middleware and exposes Prometheus text metrics at `/metrics`. Prometheus uses `docker/prometheus/prometheus.yml` to scrape the API. Grafana runs locally on port `3000` with `soumitra/deshpande`.
+The API installs request metrics middleware and exposes Prometheus text metrics at `/metrics`. Jenkins exposes CI metrics through the Jenkins Prometheus plugin at `/prometheus/`. Prometheus uses `docker/prometheus/prometheus.yml` to scrape both services. Grafana runs locally on port `3000` with `soumitra/deshpande` and provisions the `Healthcare Exchange API` dashboard from `docker/grafana/provisioning`.
 
 Logs are emitted through Pino. Filebeat reads the API and audit log files from the shared log volume and ships them into Elasticsearch for Kibana exploration.
+
+`npm run validate:integrations` verifies the runtime connections: MinIO write/read/delete, Vault KV policy and secret readback, Jenkins job/tooling, Prometheus API and Jenkins targets, Grafana datasource proxy, Kibana availability, and Elasticsearch log ingestion from Filebeat.
 
 ## Local To Production-Style Mapping
 

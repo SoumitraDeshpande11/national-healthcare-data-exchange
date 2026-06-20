@@ -7,6 +7,7 @@ GRAFANA_URL="${GRAFANA_URL:-http://localhost:3000}"
 GRAFANA_USER="${GRAFANA_USER:-soumitra}"
 GRAFANA_PASSWORD="${GRAFANA_PASSWORD:-deshpande}"
 KIBANA_URL="${KIBANA_URL:-http://localhost:5601}"
+ELASTICSEARCH_URL="${ELASTICSEARCH_URL:-http://localhost:9200}"
 
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -76,10 +77,21 @@ wait_for_json_check \
   "$PROMETHEUS_URL/api/v1/targets?state=active" \
   '.status == "success" and any(.data.activeTargets[]?; .labels.job == "exchange-api" and .health == "up")'
 
+wait_for_json_check \
+  "Prometheus Jenkins target" \
+  "$PROMETHEUS_URL/api/v1/targets?state=active" \
+  '.status == "success" and any(.data.activeTargets[]?; .labels.job == "jenkins" and .health == "up")'
+
 prometheus_query="$PROMETHEUS_URL/api/v1/query?query=up%7Bjob%3D%22exchange-api%22%7D"
 wait_for_json_check \
   "Prometheus exchange-api scrape query" \
   "$prometheus_query" \
+  '.status == "success" and any(.data.result[]?; .value[1] == "1")'
+
+jenkins_query="$PROMETHEUS_URL/api/v1/query?query=up%7Bjob%3D%22jenkins%22%7D"
+wait_for_json_check \
+  "Prometheus Jenkins scrape query" \
+  "$jenkins_query" \
   '.status == "success" and any(.data.result[]?; .value[1] == "1")'
 echo "Prometheus validation passed"
 
@@ -104,6 +116,13 @@ wait_for_json_check \
   '.status == "success" and any(.data.result[]?; .value[1] == "1")' \
   grafana
 
+grafana_jenkins_proxy_query="$GRAFANA_URL/api/datasources/proxy/uid/$datasource_uid/api/v1/query?query=up%7Bjob%3D%22jenkins%22%7D"
+wait_for_json_check \
+  "Grafana Jenkins datasource proxy" \
+  "$grafana_jenkins_proxy_query" \
+  '.status == "success" and any(.data.result[]?; .value[1] == "1")' \
+  grafana
+
 wait_for_json_check \
   "Grafana dashboard provisioning" \
   "$GRAFANA_URL/api/search?query=Healthcare%20Exchange%20API" \
@@ -112,9 +131,21 @@ wait_for_json_check \
 echo "Grafana validation passed"
 
 wait_for_json_check \
+  "Elasticsearch cluster" \
+  "$ELASTICSEARCH_URL/_cluster/health?wait_for_status=yellow&timeout=2s" \
+  '.status == "green" or .status == "yellow"'
+
+wait_for_json_check \
   "Kibana status" \
   "$KIBANA_URL/api/status" \
   '.status.overall.level == "available" and ((.status.core.elasticsearch.level? // .status.plugins.elasticsearch.level? // "available") == "available")'
 echo "Kibana validation passed"
+
+curl -fsS "$BASE_URL/health/live" >/dev/null
+wait_for_json_check \
+  "Elasticsearch API log ingestion" \
+  "$ELASTICSEARCH_URL/hde-api-logs-*/_search?size=0&q=labels.application:national-healthcare-data-exchange" \
+  '(.hits.total.value // .hits.total) > 0'
+echo "Log pipeline validation passed"
 
 echo "Observability validation passed"

@@ -37,6 +37,7 @@ RUN apt-get update \
 RUN jenkins-plugin-cli --plugins \
   git \
   pipeline-stage-view \
+  prometheus \
   timestamper \
   workflow-aggregator
 

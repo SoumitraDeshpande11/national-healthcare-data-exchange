@@ -2,7 +2,7 @@
   "uid": "healthcare-exchange-api",
   "title": "Healthcare Exchange API",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "refresh": "15s",
   "time": {
     "from": "now-6h",
@@ -128,6 +128,30 @@
         }
       ],
       "gridPos": { "x": 18, "y": 24, "w": 6, "h": 6 }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "API Target",
+      "targets": [
+        {
+          "expr": "up{job=\"exchange-api\"}",
+          "legendFormat": "exchange-api"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 30, "w": 6, "h": 6 }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Jenkins Target",
+      "targets": [
+        {
+          "expr": "up{job=\"jenkins\"}",
+          "legendFormat": "jenkins"
+        }
+      ],
+      "gridPos": { "x": 6, "y": 30, "w": 6, "h": 6 }
     }
   ]
 }

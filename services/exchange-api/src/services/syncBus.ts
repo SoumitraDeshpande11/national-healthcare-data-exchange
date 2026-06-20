@@ -19,6 +19,13 @@ export async function publishSyncEvent(event: Record<string, unknown>) {
   await redis.publish("patient-record-sync", JSON.stringify(event));
 }
 
+export async function checkSyncBus() {
+  if (!redis.isOpen) {
+    await connectSyncBus();
+  }
+  await redis.ping();
+}
+
 export async function closeSyncBus() {
   if (redis.isOpen) {
     await redis.quit();

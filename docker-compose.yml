@@ -37,6 +37,11 @@ services:
       - "9001:9001"
     volumes:
       - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   vault:
     image: hashicorp/vault:1.17
@@ -47,6 +52,11 @@ services:
       VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
     ports:
       - "8200:8200"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8200/v1/sys/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   vault-bootstrap:
     image: hashicorp/vault:1.17
@@ -69,7 +79,8 @@ services:
           ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173 \
           AUDIT_LOG_PATH=/var/log/hde/audit.log
     depends_on:
-      - vault
+      vault:
+        condition: service_healthy
 
   exchange-api:
     build:
@@ -98,12 +109,19 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio:
+        condition: service_healthy
       vault-bootstrap:
         condition: service_completed_successfully
     ports:
       - "8080:8080"
     volumes:
       - hde-api-logs:/var/log/hde
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
     logging:
       driver: json-file
       options:
@@ -115,9 +133,15 @@ services:
       context: .
       dockerfile: services/portal/Dockerfile
     depends_on:
-      - exchange-api
+      exchange-api:
+        condition: service_healthy
     ports:
       - "5173:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   prometheus:
     image: prom/prometheus:v2.52.0
@@ -128,7 +152,15 @@ services:
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
-      - exchange-api
+      exchange-api:
+        condition: service_healthy
+      jenkins:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9090/-/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   grafana:
     image: grafana/grafana:11.0.0
@@ -141,7 +173,13 @@ services:
       - grafana-data:/var/lib/grafana
       - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
-      - prometheus
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   jenkins:
     build:
@@ -159,6 +197,11 @@ services:
     volumes:
       - jenkins-data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -u \"$${JENKINS_ADMIN_ID}:$${JENKINS_ADMIN_PASSWORD}\" http://127.0.0.1:8080/api/json >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.14.1
@@ -170,6 +213,11 @@ services:
       - "9200:9200"
     volumes:
       - elastic-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9200/_cluster/health?wait_for_status=yellow&timeout=2s"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.14.1
@@ -178,7 +226,13 @@ services:
     ports:
       - "5601:5601"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:5601/api/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 24
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.14.1
@@ -192,8 +246,10 @@ services:
       - hde-api-logs:/var/log/hde:ro
       - filebeat-data:/usr/share/filebeat/data
     depends_on:
-      - elasticsearch
-      - exchange-api
+      elasticsearch:
+        condition: service_healthy
+      exchange-api:
+        condition: service_healthy
 
 volumes:
   postgres-data:

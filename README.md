@@ -14,9 +14,9 @@ The default runtime is Docker Compose:
 - `redis`: Pub/sub bus used by record creation to publish `patient-record-sync` events.
 - `minio`: S3-compatible object store for uploaded patient documents; record payloads stay in PostgreSQL JSONB.
 - `vault`: local dev Vault instance for secret-management policy examples.
-- `prometheus`: scrapes API metrics from `/metrics`.
-- `grafana`: local dashboard container with admin login.
-- `jenkins`: local CI server with a pre-created healthcare exchange pipeline job.
+- `prometheus`: scrapes API metrics from `/metrics` and Jenkins metrics from `/prometheus/`.
+- `grafana`: local dashboard container with Prometheus-backed API and Jenkins panels.
+- `jenkins`: local CI server with a pre-created healthcare exchange pipeline job and Prometheus metrics plugin.
 - `elasticsearch`, `kibana`, and `filebeat`: local log/search stack for API and audit logs.
 
 The API starts by running database migrations from `services/exchange-api/src/db/migrate.ts`. Those migrations create five demo organizations and the core tables.
@@ -40,6 +40,7 @@ The API starts by running database migrations from `services/exchange-api/src/db
 | `scripts/smoke-test.sh` | Verifies `/health/live`, `/health/ready`, agency token issuance, and agency compliance access. |
 | `scripts/seed-demo.sh` | Logs in as the hospital, upserts one demo patient, and publishes one encounter record. |
 | `scripts/compliance-check.sh` | Checks required governance files, scans for obvious secret material, and confirms route handlers call `writeAudit`. |
+| `scripts/validate-integrations.sh` | Verifies MinIO, Vault, Jenkins, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are connected. |
 | `scripts/backup-local.sh` | Dumps PostgreSQL to `backups/YYYYMMDD-HHMMSS/postgres.sql` and attempts a MinIO mirror. |
 | `scripts/restore-local.sh` | Restores PostgreSQL from a selected local backup directory. |
 | `scripts/failover-drill.sh` | Stops and restarts the API container, then runs the smoke test. |
@@ -92,9 +93,9 @@ API keys are stored as SHA-256 hashes in the seeded `organizations` table. `/aut
 | --- | --- | --- |
 | Portal | `http://localhost:5173` | Main demo UI. |
 | API | `http://localhost:8080` | Health, auth, patients, records, documents, compliance, metrics. |
-| Prometheus | `http://localhost:9090` | Scrapes `exchange-api:8080/metrics`. |
-| Grafana | `http://localhost:3000` | `soumitra` / `deshpande`. |
-| Jenkins | `http://localhost:8081` | `soumitra` / `deshpande`; job `national-healthcare-data-exchange`. |
+| Prometheus | `http://localhost:9090` | Scrapes `exchange-api:8080/metrics` and `jenkins:8080/prometheus/`. |
+| Grafana | `http://localhost:3000` | `soumitra` / `deshpande`; dashboard `Healthcare Exchange API`. |
+| Jenkins | `http://localhost:8081` | `soumitra` / `deshpande`; job `national-healthcare-data-exchange`; metrics at `/prometheus/`. |
 | MinIO Console | `http://localhost:9001` | `soumitra` / `deshpande`. |
 | Vault | `http://localhost:8200` | Root token `root` in dev mode. |
 | Kibana | `http://localhost:5601` | Connected to local Elasticsearch. |
@@ -132,9 +133,10 @@ API keys are stored as SHA-256 hashes in the seeded `organizations` table. `/aut
    curl -sS http://localhost:8080/health/live | jq .
    curl -sS http://localhost:8080/health/ready | jq .
    curl -sS http://localhost:8080/metrics | head
+   npm run validate:integrations
    ```
 
-   Jenkins is available at `http://localhost:8081` with `soumitra` / `deshpande`. Open the `national-healthcare-data-exchange` job and run `Build with Parameters`. The default build installs dependencies, validates the app, builds it, renders Kubernetes manifests, and builds local Docker images. `RUN_LIVE_SMOKE` is off by default because it uses the same Compose ports as the running local stack.
+   `npm run validate:integrations` proves that MinIO object storage, Vault secrets, Jenkins, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion are all connected. Jenkins is available at `http://localhost:8081` with `soumitra` / `deshpande`. Open the `national-healthcare-data-exchange` job and run `Build with Parameters`. The default build installs dependencies, validates the app, builds it, renders Kubernetes manifests, and builds local Docker images. `RUN_LIVE_SMOKE` is off by default because it uses the same Compose ports as the running local stack.
 
 5. Seed demo data.
 

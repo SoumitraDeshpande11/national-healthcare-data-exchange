@@ -15,7 +15,8 @@ This project demonstrates engineering controls commonly expected in a regulated 
 | Patient consent and grants | `authorization.ts`, `records.ts`, `documents.ts`, `patients.ts` | Try to create or read data for a revoked or ungranted patient and expect `403`. |
 | Audit logging | `writeAudit` calls in route handlers | Run `bash scripts/compliance-check.sh`. |
 | Audit review | `/compliance/audit-events` | Call with an agency token. |
-| Metrics | `/metrics`, Prometheus config | `curl -sS http://localhost:8080/metrics \| head`. |
+| Metrics and dashboards | `/metrics`, Jenkins `/prometheus/`, Prometheus config, Grafana provisioning | Run `npm run validate:integrations`. |
+| Log pipeline | API/audit log volume, Filebeat, Elasticsearch, Kibana | Run `npm run validate:integrations` and confirm `Log pipeline validation passed`. |
 | Network segmentation example | `kubernetes/base/networkpolicy.yaml` | `kubectl apply -k kubernetes/base`. |
 | Runtime security examples | Restricted pod-security labels and workload security contexts | Inspect `kubernetes/base/namespace.yaml` and workload manifests. |
 | Secrets posture example | Kubernetes Secrets and Vault policy | Inspect `kubernetes/base/secrets.yaml` and `security/vault/policies.hcl`. |
@@ -43,6 +44,20 @@ Expected success output:
 
 ```text
 compliance validation passed
+```
+
+## Integrated Platform Check
+
+Run after `docker compose up -d --build`:
+
+```bash
+npm run validate:integrations
+```
+
+This verifies MinIO, Vault, Jenkins, Prometheus, Grafana, Kibana, and Elasticsearch/Filebeat log ingestion. To make the Jenkins validator trigger a safe build with Docker image build and live smoke disabled, run:
+
+```bash
+RUN_JENKINS_BUILD=true npm run validate:jenkins
 ```
 
 ## Manual Role Check
